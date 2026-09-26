@@ -11,8 +11,26 @@ export type RootStackParamList = {
   ProductList: undefined;
   ProductDetail: { handle: string; title: string };
   StoreSwitcher: undefined;
+  // Merchant persona -- same stack as the shopper routes above (not a
+  // separate navigator) specifically so "Preview" can jump straight into
+  // the real `ProductDetail` screen instead of maintaining a second copy
+  // of it, and so switching persona is a `navigation.reset` to a
+  // different home route rather than mounting a whole new tree.
+  MerchantOverview: undefined;
+  MerchantModules: undefined;
+  MerchantModuleEditor: { handle: string };
+  MerchantProducts: undefined;
+  MerchantProductModules: { handle: string; title: string };
 };
 
 export type ProductListScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductList'>;
 export type ProductDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 export type StoreSwitcherScreenProps = NativeStackScreenProps<RootStackParamList, 'StoreSwitcher'>;
+export type MerchantOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'MerchantOverview'>;
+export type MerchantModulesScreenProps = NativeStackScreenProps<RootStackParamList, 'MerchantModules'>;
+export type MerchantModuleEditorScreenProps = NativeStackScreenProps<RootStackParamList, 'MerchantModuleEditor'>;
+export type MerchantProductsScreenProps = NativeStackScreenProps<RootStackParamList, 'MerchantProducts'>;
+export type MerchantProductModulesScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'MerchantProductModules'
+>;

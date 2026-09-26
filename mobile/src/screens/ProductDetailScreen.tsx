@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStoreTheme } from '../theme/ThemeContext';
 import { useProduct } from '../api/product';
 import { ImageGallery } from '../components/ImageGallery';
@@ -24,7 +24,7 @@ import type { ProductVariant } from '../types/shopify';
 export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
   const { handle } = route.params;
   const { store, theme } = useStoreTheme();
-  const { data, isLoading, isError, error, refetch } = useProduct(store, handle);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useProduct(store, handle);
   const product = data?.product;
 
   // Detected by option *name*, not position -- verified live, the two
@@ -107,6 +107,18 @@ export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
       style={{ backgroundColor: theme.surfaceColor }}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      // Pull-to-refresh calling the query's own `refetch` (not just
+      // relying on React Query's `staleTime`-gated background refetch) is
+      // what makes "merchant edits copy -> switch to shopper -> pull to
+      // refresh -> new copy is live" true even inside `staleTime`'s
+      // window -- a manual `refetch()` always re-runs the query function
+      // regardless of freshness. The merchant-side mutation hooks
+      // (`src/api/merchant.ts`) also invalidate this exact query key on
+      // success, so a foreground refetch would pick it up too; this is
+      // the explicit, always-works path the demo moment needs.
+      refreshControl={
+        <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={theme.primaryColor} />
+      }
     >
       <ImageGallery images={product.images.nodes} theme={theme} />
 

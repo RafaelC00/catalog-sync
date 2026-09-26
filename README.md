@@ -78,6 +78,54 @@ an environment variable named after its slug at sync time
 see `catalog/shopify_client.py:credentials_for_store`), so a database dump
 or an admin screenshot can never leak one.
 
+## Merchant API
+
+The React Native app reads this store's data as a *shopper*, through the
+Storefront API, with no Admin credentials anywhere in the client. `catalog/
+merchant_api.py` adds a second persona: the brand's merchandiser, who edits
+PDP module copy and decides which modules appear on which product, with no
+developer involved. That persona needs Admin-level writes
+(`metaobjectUpdate`, `metafieldsSet`/`metafieldsDelete`), and the Storefront
+API has no mutations for either, so those writes have to happen somewhere
+with an Admin token. Giving the mobile app that token directly would defeat
+the entire point of splitting Storefront (shopper) access from Admin
+(merchant) access, so every merchant write goes through this backend
+instead, under `/api/merchant/`.
+
+```
+GET   /api/merchant/{store_slug}/overview
+GET   /api/merchant/{store_slug}/modules
+PATCH /api/merchant/{store_slug}/modules/{handle}
+GET   /api/merchant/{store_slug}/products?has_modules=true|false|all
+PUT   /api/merchant/{store_slug}/products/{product_handle}/modules
+```
+
+Every request needs a matching `X-Merchant-Token` header. This is
+`APIKeyHeader`-based auth (`MerchantTokenAuth` in `catalog/merchant_api.py`)
+checked against a `MERCHANT_API_TOKEN` environment variable, and it fails
+closed: if that variable is unset, the check compares the header against an
+empty string and rejects every request with 401, the same as a wrong token
+would. An unset secret is a deploy mistake, never an implicit "auth
+disabled" state.
+
+Reads go straight to Shopify, not the local `Product`/`MetaobjectEntry`
+mirror. Those tables are filled in on `SyncService`/`DemoContentProvisioner`'s
+own schedule and can lag whatever a merchant just changed from another
+client (the Shopify admin UI, this same API from a second device), so a
+panel that showed local state right after a save could show something
+already stale. `catalog/merchant.py` fetches products and metaobjects fresh
+on every request and only writes to the local mirror afterward, to keep it
+from drifting further than it already can from changes made outside this
+API.
+
+`PUT .../products/{handle}/modules` is a full replacement of
+`custom.pdp_modules`, not a merge, matching the endpoint's own contract: the
+`handles` list becomes the product's complete set of attached modules. An
+empty list detaches everything by deleting the metafield outright
+(`metafieldsDelete`) rather than setting its value to `"[]"`, so "nothing
+attached" is a real absence, not an empty array a merchant could confuse
+with "attached to nothing" while reading the raw metafield in the Admin UI.
+
 ## What the sync actually did
 
 Two real, independent Shopify stores are connected:
@@ -114,7 +162,7 @@ few hundred products fetched in a short window).
 
 ```
 pytest -q
-# 16 passed
+# 48 passed
 ```
 
 Covers, at minimum: the idempotent upsert (a second run against unchanged
@@ -123,8 +171,12 @@ change is counted as an update, not miscounted as create or dropped as
 unchanged, and a genuinely new product alongside unchanged ones is counted
 correctly), the webhook HMAC rejection path (missing signature, wrong
 secret, tampered body all rejected; a correctly signed request is
-accepted), and `/healthz` reporting ok/degraded correctly for no-store,
-never-synced, stale, and fresh states.
+accepted), `/healthz` reporting ok/degraded correctly for no-store,
+never-synced, stale, and fresh states, and the merchant API's auth (missing
+env var, wrong token, missing header all reject), the full-replacement
+semantics of `PUT .../products/{handle}/modules` (attach then detach with
+an empty list), and its 404/422 paths (unknown store, unknown module or
+product handle, a bad `has_modules` value, a badly-typed PATCH body).
 
 ## Running locally
 

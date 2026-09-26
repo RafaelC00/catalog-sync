@@ -182,6 +182,32 @@ def brand_theme_for(store_slug: str) -> dict:
     return SEED_BRAND_THEMES.get(store_slug, SEED_BRAND_THEMES[DEFAULT_BRAND_THEME_SLUG])
 
 
+def sync_metaobject_entry_to_db(store: Store, type_: str, node: dict) -> None:
+    """
+    Mirror one metaobject entry (as read back from Shopify) into the
+    local `MetaobjectEntry` table. Module-level, not a method, because
+    `catalog/merchant.py` needs the exact same write after a
+    `metaobjectUpdate` (a merchant editing a module's heading/body from
+    the app) as `DemoContentProvisioner` needs after a create/reuse:
+    the local mirror has to reflect whatever Shopify just confirmed,
+    regardless of which flow produced the write.
+    """
+    definition = MetaobjectDefinition.objects.filter(store=store, type=type_).first()
+    if not definition:
+        # An entry already exists on Shopify for a definition this
+        # local DB hasn't mirrored yet (e.g. provisioning ran against
+        # this store before this app's DB existed). Skip the local
+        # write rather than crash; nothing downstream depends on this
+        # table being complete, only on it never lying when present.
+        return
+    fields_map = {f["key"]: f["value"] for f in node.get("fields", [])}
+    MetaobjectEntry.objects.update_or_create(
+        definition=definition,
+        handle=node["handle"],
+        defaults={"shopify_gid": node["id"], "fields": fields_map},
+    )
+
+
 @dataclass
 class StepResult:
     """One provisioning step's outcome, for the command's summary output."""
@@ -351,19 +377,7 @@ class DemoContentProvisioner:
         self.report.add(f"metaobject entry '{type_}/{handle}'", "created", created["id"])
 
     def _sync_entry_to_db(self, type_: str, node: dict) -> None:
-        definition = MetaobjectDefinition.objects.filter(store=self.store, type=type_).first()
-        if not definition:
-            # Dry-run-adjacent edge case: an entry already exists on Shopify
-            # for a definition this run hasn't (yet) mirrored locally. Skip
-            # the local write rather than crash; the definition step, once
-            # it runs for real, will backfill it.
-            return
-        fields_map = {f["key"]: f["value"] for f in node.get("fields", [])}
-        MetaobjectEntry.objects.update_or_create(
-            definition=definition,
-            handle=node["handle"],
-            defaults={"shopify_gid": node["id"], "fields": fields_map},
-        )
+        sync_metaobject_entry_to_db(self.store, type_, node)
 
     # --- Attaching modules to real products --------------------------------
 

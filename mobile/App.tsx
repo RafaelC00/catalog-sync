@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StoreThemeProvider, useStoreTheme } from './src/theme/ThemeContext';
 import { ThemeTransitionOverlay } from './src/theme/ThemeTransitionOverlay';
+import { PersonaProvider } from './src/context/PersonaContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { FONTS_TO_LOAD } from './src/theme/fonts';
 
@@ -63,7 +64,9 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <StoreThemeProvider>
-            <ThemedApp />
+            <PersonaProvider>
+              <ThemedApp />
+            </PersonaProvider>
           </StoreThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

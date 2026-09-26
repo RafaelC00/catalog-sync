@@ -21,6 +21,7 @@ from ninja import NinjaAPI
 from ninja.errors import HttpError
 
 from catalog.health import run_health_checks
+from catalog.merchant_api import router as merchant_router
 from catalog.models import Product, Store, SyncRun
 from catalog.schemas import (
     HealthOut,
@@ -38,6 +39,13 @@ from catalog.webhooks import verify_shopify_hmac
 logger = logging.getLogger("catalog.api")
 
 api = NinjaAPI(title="Catalog Sync API", version="1.0.0", urls_namespace="catalog_api")
+
+# The merchant/marketing-manager endpoints live in their own router
+# (catalog/merchant_api.py) because they carry their own auth
+# (X-Merchant-Token, see MerchantTokenAuth) instead of being open like
+# everything else under /api/. Mounting it here keeps one NinjaAPI
+# instance and one OpenAPI schema at /api/docs for the whole service.
+api.add_router("/merchant", merchant_router)
 
 
 @api.get("/healthz", response=HealthOut, tags=["ops"])

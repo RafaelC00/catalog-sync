@@ -4,6 +4,7 @@ import { useStoreTheme } from '../theme/ThemeContext';
 import { useProducts } from '../api/products';
 import { ProductCard } from '../components/ProductCard';
 import { LoadingView, ErrorView, EmptyView } from '../components/StateViews';
+import { PersonaSwitchButton } from '../components/PersonaSwitchButton';
 import { resolveFontFamily } from '../theme/fonts';
 import type { ProductListNode } from '../types/shopify';
 import type { ProductListScreenProps } from '../types/navigation';
@@ -109,11 +110,14 @@ function Header({
       <Text style={[styles.storeName, { color, fontFamily: resolveFontFamily(headingFont, 'bold') }]}>
         {storeLabel}
       </Text>
-      <Pressable onPress={onSwitchStore} style={styles.switchButton}>
-        <Text style={[styles.switchText, { color: primaryColor, fontFamily: resolveFontFamily(bodyFont, 'semibold') }]}>
-          Switch store
-        </Text>
-      </Pressable>
+      <View style={styles.headerActions}>
+        <Pressable onPress={onSwitchStore} style={styles.switchButton}>
+          <Text style={[styles.switchText, { color: primaryColor, fontFamily: resolveFontFamily(bodyFont, 'semibold') }]}>
+            Switch store
+          </Text>
+        </Pressable>
+        <PersonaSwitchButton />
+      </View>
     </View>
   );
 }
@@ -133,6 +137,11 @@ const styles = StyleSheet.create({
   storeName: {
     fontSize: 22,
     fontWeight: '700',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   switchButton: {
     paddingVertical: 6,

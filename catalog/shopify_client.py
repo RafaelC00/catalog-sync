@@ -218,6 +218,83 @@ mutation CatalogSyncSetMetafields($metafields: [MetafieldsSetInput!]!) {
 }
 """
 
+METAFIELDS_DELETE_MUTATION = """
+mutation CatalogSyncDeleteMetafields($metafields: [MetafieldIdentifierInput!]!) {
+  metafieldsDelete(metafields: $metafields) {
+    deletedMetafields { key namespace ownerId }
+    userErrors { field message }
+  }
+}
+"""
+
+# --- Merchant API additions ------------------------------------------------
+# The four items below (metaobjectUpdate, listing metaobjects by type,
+# listing products with a given metafield attached, and looking a
+# product up by handle) exist for the merchant/marketing-manager
+# persona in catalog/merchant.py. Everything above this comment was
+# already here for the sync/demo-content flows; these follow the exact
+# same shape (a query/mutation string plus a thin method that unwraps
+# the response and checks userErrors where relevant).
+
+METAOBJECT_UPDATE_MUTATION = """
+mutation CatalogSyncUpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {
+  metaobjectUpdate(id: $id, metaobject: $metaobject) {
+    metaobject {
+      id
+      handle
+      type
+      fields { key value }
+    }
+    userErrors { field message code }
+  }
+}
+"""
+
+METAOBJECTS_BY_TYPE_QUERY = """
+query CatalogSyncMetaobjectsByType($type: String!, $cursor: String) {
+  metaobjects(type: $type, first: 50, after: $cursor) {
+    pageInfo { hasNextPage endCursor }
+    edges {
+      node {
+        id
+        handle
+        type
+        fields { key value }
+      }
+    }
+  }
+}
+"""
+
+PRODUCTS_WITH_METAFIELD_QUERY = """
+query CatalogSyncProductsWithMetafield($cursor: String, $namespace: String!, $key: String!) {
+  products(first: 50, after: $cursor) {
+    pageInfo { hasNextPage endCursor }
+    edges {
+      node {
+        id
+        handle
+        title
+        featuredImage { url }
+        metafield(namespace: $namespace, key: $key) { value }
+      }
+    }
+  }
+}
+"""
+
+PRODUCT_BY_HANDLE_QUERY = """
+query CatalogSyncProductByHandle($handle: String!, $namespace: String!, $key: String!) {
+  productByHandle(handle: $handle) {
+    id
+    handle
+    title
+    featuredImage { url }
+    metafield(namespace: $namespace, key: $key) { value }
+  }
+}
+"""
+
 
 class ShopifyAPIError(RuntimeError):
     """Raised for non-throttle GraphQL errors, or exhausted retries."""
@@ -670,3 +747,89 @@ class ShopifyGraphQLClient:
             ]
         )
         return metafields[0] if metafields else {}
+
+    def delete_metafields(self, entries: list[dict]) -> list[dict | None]:
+        """
+        `entries` is a list of {ownerId, namespace, key} identifiers.
+        Used to fully detach a list.metaobject_reference metafield
+        rather than setting it to an empty list: deleting is the
+        unambiguous "nothing attached" state, and it is what
+        `merchant.set_product_modules` uses when a PUT's `handles` is
+        empty. `metafieldsDelete` does not error on an identifier that
+        doesn't exist (that entry just comes back null), which is what
+        makes calling this safe even if the product never had the
+        metafield set in the first place.
+        """
+        result = self.execute(METAFIELDS_DELETE_MUTATION, {"metafields": entries})
+        payload = _raise_for_user_errors("metafieldsDelete", result.data)
+        return payload.get("deletedMetafields") or []
+
+    def delete_product_metafield(self, product_gid: str, namespace: str, key: str) -> dict | None:
+        deleted = self.delete_metafields([{"ownerId": product_gid, "namespace": namespace, "key": key}])
+        return deleted[0] if deleted else None
+
+    # --- Merchant API: updating an existing metaobject entry --------------
+
+    def update_metaobject(self, gid: str, fields: dict[str, str]) -> dict:
+        """
+        `fields` uses patch semantics on Shopify's side (an omitted key
+        keeps its existing value); this client only ever passes the
+        keys the caller actually wants to change, which is exactly
+        what `merchant.patch_module` needs for a partial update.
+        """
+        metaobject_input = {"fields": [{"key": k, "value": v} for k, v in fields.items()]}
+        result = self.execute(METAOBJECT_UPDATE_MUTATION, {"id": gid, "metaobject": metaobject_input})
+        payload = _raise_for_user_errors("metaobjectUpdate", result.data)
+        return payload["metaobject"]
+
+    # --- Merchant API: listing metaobjects / products at scale -------------
+
+    def iter_metaobjects_by_type(self, type_: str):
+        """
+        Same cursor-pagination shape as `iter_products`: yields
+        (page_nodes, page_number, result) so a caller that wants
+        per-page progress can have it, though `catalog/merchant.py`
+        just flattens every page since the module catalog is small.
+        """
+        cursor = None
+        page_number = 0
+        while True:
+            page_number += 1
+            result = self.execute(METAOBJECTS_BY_TYPE_QUERY, {"type": type_, "cursor": cursor})
+            connection = result.data.get("metaobjects", {})
+            edges = connection.get("edges", [])
+            nodes = [edge["node"] for edge in edges]
+            yield nodes, page_number, result
+
+            page_info = connection.get("pageInfo", {})
+            if not page_info.get("hasNextPage"):
+                return
+            cursor = page_info.get("endCursor")
+
+    def iter_products_with_metafield(self, namespace: str, key: str):
+        """
+        Like `iter_products`, but requesting only what the merchant
+        endpoints need (handle, title, image, one metafield value)
+        instead of the full product+variants shape `iter_products`
+        pulls for the catalog sync. Smaller query cost per page for a
+        read path that has nothing to do with variants.
+        """
+        cursor = None
+        page_number = 0
+        while True:
+            page_number += 1
+            result = self.execute(PRODUCTS_WITH_METAFIELD_QUERY, {"cursor": cursor, "namespace": namespace, "key": key})
+            connection = result.data.get("products", {})
+            edges = connection.get("edges", [])
+            nodes = [edge["node"] for edge in edges]
+            yield nodes, page_number, result
+
+            page_info = connection.get("pageInfo", {})
+            if not page_info.get("hasNextPage"):
+                return
+            cursor = page_info.get("endCursor")
+
+    def fetch_product_by_handle(self, handle: str, namespace: str, key: str) -> dict | None:
+        """Single-product lookup for the PUT .../products/{handle}/modules endpoint."""
+        result = self.execute(PRODUCT_BY_HANDLE_QUERY, {"handle": handle, "namespace": namespace, "key": key})
+        return result.data.get("productByHandle")

@@ -19,6 +19,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers as default_cors_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -147,12 +148,29 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SHOPIFY_API_VERSION = os.environ.get("SHOPIFY_API_VERSION", "2025-01")
 SHOPIFY_WEBHOOK_SECRET = os.environ.get("SHOPIFY_WEBHOOK_SECRET", "")
 
+# Shared secret for the merchant/marketing-manager API (catalog/merchant_api.py).
+# Deliberately no default: an unset MERCHANT_API_TOKEN must mean "reject every
+# request" (fail closed), never "auth disabled". See MerchantTokenAuth.
+MERCHANT_API_TOKEN = os.environ.get("MERCHANT_API_TOKEN", "")
+
 # Frontend origin allowed to call the API cross-origin (the Vite/React
 # app, whether local dev or the deployed static build).
 CORS_ALLOWED_ORIGINS = [
     o.strip() for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",") if o.strip()
 ]
 CORS_ALLOW_ALL_ORIGINS = os.environ.get("CORS_ALLOW_ALL_ORIGINS", "false").lower() == "true"
+
+# The merchant API authenticates with a custom header, and a custom header is
+# exactly what turns a simple cross-origin request into a preflighted one. It is
+# not in django-cors-headers' default allow-list, so without this the browser
+# refuses to send the real request at all and the caller sees a generic network
+# failure rather than a 401 -- the error says "cannot reach the server" while the
+# server is running perfectly well and never hears from it.
+#
+# Native clients (Expo Go on a device) are unaffected, since CORS is a browser
+# rule. This only matters for the web build, which is also the easiest way to
+# review the app, so it is worth getting right.
+CORS_ALLOW_HEADERS = (*default_cors_headers, "x-merchant-token")
 
 # --- Logging --------------------------------------------------------------
 # Structured JSON in anything that isn't local DEBUG so log lines are

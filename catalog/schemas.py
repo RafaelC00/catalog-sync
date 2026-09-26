@@ -90,3 +90,68 @@ class HealthOut(Schema):
     status: str
     checked_at: datetime
     dependencies: list[HealthDependency]
+
+
+# --- Merchant API ---------------------------------------------------------
+# Schemas for the merchant/marketing-manager persona (catalog/merchant_api.py).
+# These describe Shopify metaobject/product data as read live from the Admin
+# API, not the local Product/MetaobjectEntry mirror, so they intentionally
+# don't reuse ProductOut etc.: the shapes only coincide by accident of both
+# describing "a product".
+
+
+class MerchantStoreOut(Schema):
+    slug: str
+    name: str
+    domain: str
+
+
+class MerchantThemeOut(Schema):
+    primary_color: str
+    surface_color: str
+    text_color: str
+    heading_font: str
+    body_font: str
+    radius: int
+
+
+class MerchantOverviewOut(Schema):
+    store: MerchantStoreOut
+    theme: MerchantThemeOut
+    product_count: int
+    products_with_modules: int
+    module_count: int
+
+
+class MerchantModuleOut(Schema):
+    handle: str
+    gid: str
+    module_type: str
+    heading: str
+    body: str
+    display_order: int | None
+    icon: str
+    used_on_product_count: int
+
+
+class MerchantModulePatchIn(Schema):
+    heading: str | None = None
+    body: str | None = None
+    display_order: int | None = None
+
+
+class MerchantProductOut(Schema):
+    handle: str
+    gid: str
+    title: str
+    featured_image_url: str | None
+    module_handles: list[str]
+
+
+class MerchantProductModulesIn(Schema):
+    handles: list[str]
+
+
+class MerchantProductModulesOut(Schema):
+    handle: str
+    module_handles: list[str]
