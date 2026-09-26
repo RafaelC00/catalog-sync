@@ -49,7 +49,11 @@ export const PRODUCT_QUERY = /* GraphQL */ `
           currencyCode
         }
       }
-      variants(first: 20) {
+      options {
+        name
+        values
+      }
+      variants(first: 50) {
         nodes {
           id
           title
@@ -57,6 +61,10 @@ export const PRODUCT_QUERY = /* GraphQL */ `
           price {
             amount
             currencyCode
+          }
+          selectedOptions {
+            name
+            value
           }
         }
       }

@@ -39,11 +39,25 @@ export interface ProductsConnection {
   pageInfo: PageInfo;
 }
 
+/** One selected option on a variant, e.g. `{ name: "Color", value: "Navy" }`. */
+export interface SelectedOption {
+  name: string;
+  value: string;
+}
+
 export interface ProductVariant {
   id: string;
   title: string;
   availableForSale: boolean;
   price: Money;
+  selectedOptions: SelectedOption[];
+}
+
+/** One product option (e.g. `Size`, `Color`, or a store-specific name like
+ * `Talla`/`Estilo`) with the full set of values it can take across variants. */
+export interface ProductOption {
+  name: string;
+  values: string[];
 }
 
 /**
@@ -76,6 +90,7 @@ export interface ProductDetail {
   descriptionHtml: string;
   images: { nodes: StorefrontImage[] };
   priceRange: PriceRange;
+  options: ProductOption[];
   variants: { nodes: ProductVariant[] };
   /**
    * Nullable by design: the `custom.pdp_modules` metafield, and the
