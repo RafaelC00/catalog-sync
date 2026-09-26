@@ -22,7 +22,17 @@ const queryClient = new QueryClient({
 });
 
 function ThemedApp() {
-  const { theme } = useStoreTheme();
+  const { theme, isStoreHydrated } = useStoreTheme();
+
+  // Same reasoning as the font gate below, one level further in: the
+  // remembered store is read from storage asynchronously, so mounting before
+  // it arrives would paint the default brand and then swap. Between two brands
+  // this different -- cream and serif versus near-black and geometric sans --
+  // that flash reads as a bug, not as loading.
+  if (!isStoreHydrated) {
+    return null;
+  }
+
   return (
     <NavigationContainer>
       <RootNavigator />
