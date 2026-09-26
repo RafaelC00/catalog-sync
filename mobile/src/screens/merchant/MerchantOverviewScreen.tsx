@@ -38,7 +38,13 @@ export function MerchantOverviewScreen({ navigation }: MerchantOverviewScreenPro
           >
             MERCHANT
           </Text>
+          {/* Store names come from Shopify and can be long ("Loomwerk Apparel
+              Wholesale"). Without truncation the title pushes the persona
+              switch off the right edge of a phone screen, clipping the one
+              control that gets you back to the shopper view. */}
           <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
             style={[styles.storeName, { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'bold') }]}
           >
             {headerLabel}
@@ -295,9 +301,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 8,
+    gap: 12,
   },
   headerText: {
     gap: 2,
+    // flex + minWidth:0 lets the title shrink instead of pushing the persona
+    // switch past the edge. Without minWidth a flex row refuses to shrink a
+    // child below its content width, which is the usual cause of a control
+    // being clipped off-screen rather than the layout wrapping.
+    flex: 1,
+    minWidth: 0,
   },
   eyebrow: {
     fontSize: 11,
