@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { resolveFontFamily } from '../theme/fonts';
 import type { ProductListNode } from '../types/shopify';
 import type { BrandTheme } from '../types/domain';
+import { formatPrice } from '../utils/formatPrice';
 
 interface ProductCardProps {
   product: ProductListNode;
@@ -60,7 +61,7 @@ export const ProductCard = memo(function ProductCard({ product, theme, onPress }
           { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') },
         ]}
       >
-        {price.currencyCode} {price.amount}
+        {formatPrice(price)}
       </Text>
     </Pressable>
   );

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { resolveFontFamily } from '../../theme/fonts';
 import type { PdpModule, BrandTheme } from '../../types/domain';
 import type { Money } from '../../types/shopify';
+import { formatAmount } from '../../utils/formatPrice';
 
 interface BundleOfferProps {
   module: PdpModule;
@@ -46,7 +47,7 @@ export function BundleOffer({ module, theme, price }: BundleOfferProps) {
               { color: `${theme.textColor}80`, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') },
             ]}
           >
-            {price.currencyCode} {amount.toFixed(2)}
+            {formatAmount(amount, price.currencyCode)}
           </Text>
           <Text
             style={[
@@ -54,7 +55,7 @@ export function BundleOffer({ module, theme, price }: BundleOfferProps) {
               { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.headingFont, 'bold') },
             ]}
           >
-            {price.currencyCode} {bundlePrice.toFixed(2)}
+            {formatAmount(bundlePrice, price.currencyCode)}
           </Text>
           <View style={[styles.badge, { backgroundColor: theme.primaryColor, borderRadius: theme.radius / 2 }]}>
             {/* This text was previously left on default styles entirely --

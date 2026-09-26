@@ -8,6 +8,7 @@ import { LoadingView, ErrorView } from '../components/StateViews';
 import { stripHtml } from '../utils/stripHtml';
 import { resolveFontFamily } from '../theme/fonts';
 import type { ProductDetailScreenProps } from '../types/navigation';
+import { formatPrice } from '../utils/formatPrice';
 
 export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
   const { handle } = route.params;
@@ -51,7 +52,7 @@ export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
             { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'semibold') },
           ]}
         >
-          {price.currencyCode} {price.amount}
+          {formatPrice(price)}
         </Text>
 
         {description ? (
