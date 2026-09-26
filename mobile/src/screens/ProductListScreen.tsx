@@ -4,6 +4,7 @@ import { useStoreTheme } from '../theme/ThemeContext';
 import { useProducts } from '../api/products';
 import { ProductCard } from '../components/ProductCard';
 import { LoadingView, ErrorView, EmptyView } from '../components/StateViews';
+import { resolveFontFamily } from '../theme/fonts';
 import type { ProductListNode } from '../types/shopify';
 import type { ProductListScreenProps } from '../types/navigation';
 
@@ -105,9 +106,13 @@ function Header({
 }) {
   return (
     <View style={styles.header}>
-      <Text style={[styles.storeName, { color, fontFamily: headingFont }]}>{storeLabel}</Text>
+      <Text style={[styles.storeName, { color, fontFamily: resolveFontFamily(headingFont, 'bold') }]}>
+        {storeLabel}
+      </Text>
       <Pressable onPress={onSwitchStore} style={styles.switchButton}>
-        <Text style={[styles.switchText, { color: primaryColor, fontFamily: bodyFont }]}>Switch store</Text>
+        <Text style={[styles.switchText, { color: primaryColor, fontFamily: resolveFontFamily(bodyFont, 'semibold') }]}>
+          Switch store
+        </Text>
       </Pressable>
     </View>
   );

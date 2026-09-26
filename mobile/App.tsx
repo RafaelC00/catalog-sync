@@ -1,5 +1,6 @@
 import 'react-native-gesture-handler';
 import React from 'react';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StoreThemeProvider, useStoreTheme } from './src/theme/ThemeContext';
 import { ThemeTransitionOverlay } from './src/theme/ThemeTransitionOverlay';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { FONTS_TO_LOAD } from './src/theme/fonts';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +44,20 @@ function isLight(hexColor: string): boolean {
 }
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts(FONTS_TO_LOAD);
+
+  // Hold here instead of mounting the real tree: every themed `Text` in
+  // this app resolves its `fontFamily` against these exact assets (see
+  // `src/theme/fonts.ts`). Rendering before they're ready would paint the
+  // platform system font for one frame and then swap to the brand font --
+  // returning `null` means the app's first paint is already correct.
+  // `fontError` still proceeds (a failed asset just resolves to the system
+  // font via `resolveFontFamily`'s `undefined` fallback) rather than
+  // getting stuck on a blank screen forever over one bad font file.
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

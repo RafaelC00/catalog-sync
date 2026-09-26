@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { resolveFontFamily } from '../../theme/fonts';
 import type { PdpModule, BrandTheme } from '../../types/domain';
 import type { Money } from '../../types/shopify';
 
@@ -25,21 +26,44 @@ export function BundleOffer({ module, theme, price }: BundleOfferProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: `${theme.primaryColor}0F`, borderRadius: theme.radius }]}>
-      <Text style={[styles.heading, { color: theme.textColor, fontFamily: theme.headingFont }]}>
+      <Text
+        style={[
+          styles.heading,
+          { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'semibold') },
+        ]}
+      >
         {module.heading}
       </Text>
-      <Text style={[styles.body, { color: theme.textColor, fontFamily: theme.bodyFont }]}>{module.body}</Text>
+      <Text style={[styles.body, { color: theme.textColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') }]}>
+        {module.body}
+      </Text>
 
       {bundlePrice !== null ? (
         <View style={styles.priceRow}>
-          <Text style={[styles.strikePrice, { color: `${theme.textColor}80`, fontFamily: theme.bodyFont }]}>
+          <Text
+            style={[
+              styles.strikePrice,
+              { color: `${theme.textColor}80`, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') },
+            ]}
+          >
             {price.currencyCode} {amount.toFixed(2)}
           </Text>
-          <Text style={[styles.bundlePrice, { color: theme.primaryColor, fontFamily: theme.headingFont }]}>
+          <Text
+            style={[
+              styles.bundlePrice,
+              { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.headingFont, 'bold') },
+            ]}
+          >
             {price.currencyCode} {bundlePrice.toFixed(2)}
           </Text>
           <View style={[styles.badge, { backgroundColor: theme.primaryColor, borderRadius: theme.radius / 2 }]}>
-            <Text style={styles.badgeText}>Save {discountPercent}%</Text>
+            {/* This text was previously left on default styles entirely --
+                no theme font at all -- while every other label in this
+                module was. Fixed to match: bold body-font, same as the
+                weight the style already declared. */}
+            <Text style={[styles.badgeText, { fontFamily: resolveFontFamily(theme.bodyFont, 'bold') }]}>
+              Save {discountPercent}%
+            </Text>
           </View>
         </View>
       ) : null}

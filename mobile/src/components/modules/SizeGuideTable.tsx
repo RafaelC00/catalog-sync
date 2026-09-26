@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { resolveFontFamily } from '../../theme/fonts';
 import type { PdpModule, BrandTheme } from '../../types/domain';
 
 interface TableRow {
@@ -40,7 +41,12 @@ export function SizeGuideTable({ module, theme }: { module: PdpModule; theme: Br
 
   return (
     <View style={[styles.container, { borderColor, borderRadius: theme.radius }]}>
-      <Text style={[styles.heading, { color: theme.textColor, fontFamily: theme.headingFont }]}>
+      <Text
+        style={[
+          styles.heading,
+          { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'semibold') },
+        ]}
+      >
         {module.heading}
       </Text>
       <View style={[styles.table, { borderColor }]}>
@@ -53,11 +59,19 @@ export function SizeGuideTable({ module, theme }: { module: PdpModule; theme: Br
               index === rows.length - 1 ? styles.lastRow : null,
             ]}
           >
-            <Text style={[styles.labelCell, { color: theme.primaryColor, fontFamily: theme.bodyFont }]}>
+            <Text
+              style={[
+                styles.labelCell,
+                { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'bold') },
+              ]}
+            >
               {row.label}
             </Text>
             <Text
-              style={[styles.valueCell, { color: theme.textColor, fontFamily: theme.bodyFont, borderColor }]}
+              style={[
+                styles.valueCell,
+                { color: theme.textColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular'), borderColor },
+              ]}
             >
               {row.value}
             </Text>

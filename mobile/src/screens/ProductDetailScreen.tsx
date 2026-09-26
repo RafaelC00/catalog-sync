@@ -6,6 +6,7 @@ import { ImageGallery } from '../components/ImageGallery';
 import { ModuleList } from '../components/modules/ModuleList';
 import { LoadingView, ErrorView } from '../components/StateViews';
 import { stripHtml } from '../utils/stripHtml';
+import { resolveFontFamily } from '../theme/fonts';
 import type { ProductDetailScreenProps } from '../types/navigation';
 
 export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
@@ -39,15 +40,27 @@ export function ProductDetailScreen({ route }: ProductDetailScreenProps) {
       <ImageGallery images={product.images.nodes} theme={theme} />
 
       <View style={styles.body}>
-        <Text style={[styles.title, { color: theme.textColor, fontFamily: theme.headingFont }]}>
+        <Text
+          style={[styles.title, { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'bold') }]}
+        >
           {product.title}
         </Text>
-        <Text style={[styles.price, { color: theme.primaryColor, fontFamily: theme.bodyFont }]}>
+        <Text
+          style={[
+            styles.price,
+            { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'semibold') },
+          ]}
+        >
           {price.currencyCode} {price.amount}
         </Text>
 
         {description ? (
-          <Text style={[styles.description, { color: theme.textColor, fontFamily: theme.bodyFont }]}>
+          <Text
+            style={[
+              styles.description,
+              { color: theme.textColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') },
+            ]}
+          >
             {description}
           </Text>
         ) : null}
@@ -76,7 +89,12 @@ function VariantSummary({
   bodyFont: string;
 }) {
   return (
-    <Text style={[styles.availability, { color: `${textColor}99`, fontFamily: bodyFont }]}>
+    <Text
+      style={[
+        styles.availability,
+        { color: `${textColor}99`, fontFamily: resolveFontFamily(bodyFont, 'regular') },
+      ]}
+    >
       {availableForSale ? 'In stock' : 'Currently unavailable'}
     </Text>
   );

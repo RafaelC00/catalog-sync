@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStoreTheme } from '../theme/ThemeContext';
 import { triggerSelectionHaptic } from '../utils/haptics';
+import { resolveFontFamily } from '../theme/fonts';
 import type { StoreSwitcherScreenProps } from '../types/navigation';
 import type { StoreConfig } from '../types/domain';
 
@@ -23,7 +24,9 @@ export function StoreSwitcherScreen({ navigation }: StoreSwitcherScreenProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.surfaceColor }]}>
-      <Text style={[styles.title, { color: theme.textColor, fontFamily: theme.headingFont }]}>Choose a store</Text>
+      <Text style={[styles.title, { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'bold') }]}>
+        Choose a store
+      </Text>
       {availableStores.map((store) => {
         const isActive = store.id === storeId;
         return (
@@ -38,11 +41,21 @@ export function StoreSwitcherScreen({ navigation }: StoreSwitcherScreenProps) {
               },
             ]}
           >
-            <Text style={[styles.optionLabel, { color: theme.textColor, fontFamily: theme.bodyFont }]}>
+            <Text
+              style={[
+                styles.optionLabel,
+                { color: theme.textColor, fontFamily: resolveFontFamily(theme.bodyFont, 'semibold') },
+              ]}
+            >
               {store.label}
             </Text>
             {isActive ? (
-              <Text style={[styles.activeMark, { color: theme.primaryColor, fontFamily: theme.bodyFont }]}>
+              <Text
+                style={[
+                  styles.activeMark,
+                  { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'semibold') },
+                ]}
+              >
                 Active
               </Text>
             ) : null}

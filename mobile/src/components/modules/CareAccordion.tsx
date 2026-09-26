@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import type { PdpModule, BrandTheme } from '../../types/domain';
 import { triggerSelectionHaptic } from '../../utils/haptics';
+import { resolveFontFamily } from '../../theme/fonts';
 
 /**
  * `care` module: a tap-to-expand accordion. Uses reanimated's Layout
@@ -22,14 +23,28 @@ export function CareAccordion({ module, theme }: { module: PdpModule; theme: Bra
   return (
     <View style={[styles.container, { borderColor: `${theme.textColor}20`, borderRadius: theme.radius }]}>
       <Pressable onPress={toggle} style={styles.header}>
-        <Text style={[styles.heading, { color: theme.textColor, fontFamily: theme.headingFont }]}>
+        <Text
+          style={[
+            styles.heading,
+            { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'semibold') },
+          ]}
+        >
           {module.heading}
         </Text>
-        <Text style={[styles.chevron, { color: theme.primaryColor }]}>{expanded ? '−' : '+'}</Text>
+        {/* Previously left on default styles entirely -- no theme font at
+            all, unlike every other label in this module. Fixed to match:
+            semibold body-font, same weight the style already declared. */}
+        <Text
+          style={[styles.chevron, { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'semibold') }]}
+        >
+          {expanded ? '−' : '+'}
+        </Text>
       </Pressable>
       {expanded ? (
         <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)} style={styles.body}>
-          <Text style={[styles.bodyText, { color: theme.textColor, fontFamily: theme.bodyFont }]}>
+          <Text
+            style={[styles.bodyText, { color: theme.textColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') }]}
+          >
             {module.body}
           </Text>
         </Animated.View>

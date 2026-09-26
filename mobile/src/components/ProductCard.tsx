@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { resolveFontFamily } from '../theme/fonts';
 import type { ProductListNode } from '../types/shopify';
 import type { BrandTheme } from '../types/domain';
 
@@ -45,12 +46,20 @@ export const ProductCard = memo(function ProductCard({ product, theme, onPress }
         transition={150}
       />
       <Text
-        style={[styles.title, { color: theme.textColor, fontFamily: theme.headingFont }]}
+        style={[
+          styles.title,
+          { color: theme.textColor, fontFamily: resolveFontFamily(theme.headingFont, 'semibold') },
+        ]}
         numberOfLines={2}
       >
         {product.title}
       </Text>
-      <Text style={[styles.price, { color: theme.primaryColor, fontFamily: theme.bodyFont }]}>
+      <Text
+        style={[
+          styles.price,
+          { color: theme.primaryColor, fontFamily: resolveFontFamily(theme.bodyFont, 'regular') },
+        ]}
+      >
         {price.currencyCode} {price.amount}
       </Text>
     </Pressable>
