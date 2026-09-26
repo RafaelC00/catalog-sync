@@ -1,0 +1,14 @@
+.venv
+frontend/node_modules
+frontend/dist
+.pytest_cache
+staticfiles
+*.pyc
+__pycache__
+.env
+.env.local
+.git
+.agents
+skills-lock.json
+.vercel_token_tmp
+.env_vercel_tmp
