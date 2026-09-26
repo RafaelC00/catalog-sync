@@ -134,17 +134,52 @@ SEED_PDP_MODULES = [
     },
 ]
 
-SEED_BRAND_THEME = {
-    "handle": "demo-brand-theme-default",
-    "fields": {
-        "primary_color": "#1F2A24",
-        "surface_color": "#F6F3EC",
-        "text_color": "#1A1A1A",
-        "heading_font": "Cormorant",
-        "body_font": "Montserrat",
-        "radius": "8",
+# The brand theme is deliberately PER STORE. The whole point of the demo is
+# that one app binary renders as a different brand depending on whose data it
+# is reading, so shipping every store the same palette would prove nothing.
+# Each entry below is a real design decision, not a placeholder:
+#
+#   nomada   - warm, light, editorial. Cream ground, deep forest green,
+#              a display serif, softly rounded corners. Reads artisanal.
+#   loomwerk - cool, dark, industrial. Near-black ground, clay accent,
+#              geometric sans, near-square corners. Reads workwear/B2B.
+#
+# Light-ground vs dark-ground is the strongest difference visible at a glance
+# on a phone, and it also proves the theming is genuine: a dark surface breaks
+# any component that quietly assumed a light one.
+SEED_BRAND_THEMES: dict[str, dict] = {
+    "nomada": {
+        "handle": "demo-brand-theme-nomada",
+        "fields": {
+            "primary_color": "#1F2A24",
+            "surface_color": "#F6F3EC",
+            "text_color": "#1A1A1A",
+            "heading_font": "Cormorant",
+            "body_font": "Montserrat",
+            "radius": "8",
+        },
+    },
+    "loomwerk": {
+        "handle": "demo-brand-theme-loomwerk",
+        "fields": {
+            "primary_color": "#C2643B",
+            "surface_color": "#14161A",
+            "text_color": "#ECEEF1",
+            "heading_font": "Archivo",
+            "body_font": "Inter",
+            "radius": "2",
+        },
     },
 }
+
+# Any store without an explicit theme falls back to Nomada's, so provisioning a
+# third store still produces something coherent rather than failing.
+DEFAULT_BRAND_THEME_SLUG = "nomada"
+
+
+def brand_theme_for(store_slug: str) -> dict:
+    """The brand theme seed for one store, falling back to the default."""
+    return SEED_BRAND_THEMES.get(store_slug, SEED_BRAND_THEMES[DEFAULT_BRAND_THEME_SLUG])
 
 
 @dataclass
@@ -196,7 +231,8 @@ class DemoContentProvisioner:
             self._ensure_metaobject_entry(PDP_MODULE_TYPE, seed["handle"], seed["fields"])
 
         self._entry_gids[BRAND_THEME_TYPE] = {}
-        self._ensure_metaobject_entry(BRAND_THEME_TYPE, SEED_BRAND_THEME["handle"], SEED_BRAND_THEME["fields"])
+        theme = brand_theme_for(self.store.slug)
+        self._ensure_metaobject_entry(BRAND_THEME_TYPE, theme["handle"], theme["fields"])
 
         self._attach_modules_to_products()
         return self.report
