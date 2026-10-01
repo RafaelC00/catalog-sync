@@ -20,7 +20,7 @@ from django.shortcuts import get_object_or_404
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
-from catalog.health import run_health_checks
+from catalog.health import health_status_code, run_health_checks
 from catalog.merchant_api import router as merchant_router
 from catalog.models import Product, Store, SyncRun
 from catalog.schemas import (
@@ -57,7 +57,7 @@ def healthz(request: HttpRequest):
     status line, not just in the body.
     """
     result = run_health_checks()
-    status_code = 200 if result["status"] == "ok" else 503
+    status_code = health_status_code(result)
     return api.create_response(request, result, status=status_code)
 
 

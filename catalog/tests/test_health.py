@@ -57,3 +57,30 @@ def test_healthz_ok_when_last_success_is_recent():
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("path", ["/healthz", "/health"])
+def test_health_aliases_serve_json_not_the_spa(client, path):
+    """
+    The bare paths must run the real check.
+
+    Regression guard: vercel.json's SPA catch-all used to answer these with
+    200 and an HTML page, so a probe on the conventional path was told
+    everything was fine without anything being checked.
+    """
+    response = client.get(path)
+    assert response["Content-Type"].startswith("application/json")
+    assert response.status_code in (200, 503)
+    body = response.json()
+    assert body["status"] in ("ok", "degraded", "down")
+    assert {d["name"] for d in body["dependencies"]} == {"database", "sync_freshness"}
+
+
+@pytest.mark.django_db
+def test_health_alias_matches_the_api_endpoint(client):
+    """The alias and /api/healthz must never disagree."""
+    alias = client.get("/healthz")
+    api = client.get("/api/healthz")
+    assert alias.status_code == api.status_code
+    assert alias.json()["status"] == api.json()["status"]
