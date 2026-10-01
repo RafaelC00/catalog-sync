@@ -25,5 +25,12 @@ const SPEC_EMOJI: Record<string, string> = {
 const FALLBACK_EMOJI = '🏷️';
 
 export function specEmoji(label: string): string {
-  return SPEC_EMOJI[label.trim().toLowerCase()] ?? FALLBACK_EMOJI;
+  const key = label.trim().toLowerCase();
+  // hasOwn, not a bare lookup: SPEC_EMOJI is an object literal, so a label of
+  // "constructor" or "toString" would otherwise resolve against
+  // Object.prototype and return a function, which `??` happily passes through
+  // as if it were an emoji.
+  return Object.prototype.hasOwnProperty.call(SPEC_EMOJI, key)
+    ? SPEC_EMOJI[key]
+    : FALLBACK_EMOJI;
 }
