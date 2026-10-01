@@ -1,6 +1,6 @@
 /**
  * Merchant backend connection settings. Deliberately *not* run through
- * `requireEnv` (see `src/api/env.ts`) -- the brief calls out that this
+ * `requireEnv` (see `src/api/env.ts`) -- the spec calls out that this
  * backend "may not be running or may 401 while you work" as a first-class
  * state, so a missing token has to fail as a normal, catchable HTTP 401
  * from `merchantClient.ts` (surfaced in the UI) rather than a thrown error

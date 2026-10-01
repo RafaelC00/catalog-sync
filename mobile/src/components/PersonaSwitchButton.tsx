@@ -9,7 +9,7 @@ import { triggerSelectionHaptic } from '../utils/haptics';
 import type { RootStackParamList } from '../types/navigation';
 
 /**
- * The persona switch "at the app root" the brief asks for. Rather than a
+ * The persona switch "at the app root" the spec asks for. Rather than a
  * separate always-mounted overlay (which would have to reimplement header
  * safe-area/insets on every screen), this is dropped into every screen's
  * header via `RootNavigator`'s `screenOptions.headerRight` plus the two

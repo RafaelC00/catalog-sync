@@ -10,7 +10,7 @@ import type { MerchantModule } from '../../types/merchant';
 
 /**
  * The `demo_pdp_module` catalog (care / size_guide / bundle) -- each row
- * shows exactly the fields the brief asks for: heading, body preview,
+ * shows exactly the fields the spec asks for: heading, body preview,
  * display order and how many products use it. Tapping opens the editor.
  */
 export function MerchantModulesScreen({ navigation }: MerchantModulesScreenProps) {

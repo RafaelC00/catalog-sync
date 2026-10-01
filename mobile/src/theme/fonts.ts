@@ -26,7 +26,7 @@ import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
  *
  * Only the weights actually used somewhere in `src/` are loaded (see the
  * per-weight comments below and `FONT_REGISTRY`) -- this is a deliberate
- * bundle-size call per the brief, not an oversight:
+ * bundle-size call per the spec, not an oversight:
  *  - Cormorant/Archivo are only ever assigned to `heading_font`, and no
  *    heading in this UI renders at regular weight, so they skip
  *    `..._400Regular` entirely (two fewer font files).

@@ -10,7 +10,7 @@ import type { BrandTheme } from '../../types/domain';
 
 /**
  * The merchant persona's home screen -- the "control panel for a brand"
- * the brief asks for. Renders the store's `demo_brand_theme` as data (not
+ * the spec asks for. Renders the store's `demo_brand_theme` as data (not
  * as the screen's own chrome, which still comes from `useStoreTheme()` so
  * this reads correctly on both brands regardless of what the API returns)
  * plus module-coverage stats, and links into Modules / Products.
@@ -26,7 +26,7 @@ export function MerchantOverviewScreen({ navigation }: MerchantOverviewScreenPro
   // navigator's `headerRight`. An early return here for the error/loading
   // states (the way the shopper equivalent does it) would leave a merchant
   // stuck on this persona with literally no way back while the backend is
-  // down -- exactly the case the brief calls out as a real, expected state.
+  // down -- exactly the case the spec calls out as a real, expected state.
   const headerLabel = overviewQuery.data?.store.name ?? store.label;
 
   return (
@@ -215,7 +215,7 @@ function FontSample({
       >
         {role.toUpperCase()}
       </Text>
-      {/* The font name rendered SET IN that font, per the brief -- if the
+      {/* The font name rendered SET IN that font, per the spec -- if the
           name isn't in `FONT_REGISTRY` (an unbundled family), this simply
           falls back to the system font, same rule as everywhere else. */}
       <Text style={[styles.fontName, { color: theme.textColor, fontFamily: resolveFontFamily(fontName, weight) }]}>
