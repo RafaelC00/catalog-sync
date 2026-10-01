@@ -5,7 +5,11 @@ backend, React on the frontend, syncing real product catalogs from two live
 Shopify stores into a Postgres-backed local model, with an operations
 console to watch it work.
 
-This exists to demonstrate Python at production shape, not script shape:
+**Live:** <https://catalog-sync-ashy.vercel.app> &nbsp;·&nbsp; **Health:** <https://catalog-sync-ashy.vercel.app/healthz>
+
+![The sync console: run history, change counts, and the event timeline for a single run](docs/console.png)
+
+It is built to production shape rather than script shape:
 cursor pagination against a real rate-limited API, idempotent upserts,
 change detection, a signed webhook endpoint, and a health check that
 actually checks something. Every number in this README came from running
@@ -214,29 +218,26 @@ else to the built frontend) and `config/settings.py` for how
 `DATABASE_URL` is parsed by hand (skipped a dependency for one `urlparse`
 call).
 
-## What's simplified for a demo this size, and what production would add
+## What's simplified at this size, and what production would add
 
 - **Sync trigger runs synchronously in the request.** For 18-59 products
   that is a 1-3 second request. `SyncService.run_sync()` has no
   request-lifecycle dependency, so swapping it behind a queued worker
-  (Celery/RQ) for a real multi-tenant deployment with hundreds of stores is
+  (Celery/RQ) for a multi-tenant deployment with hundreds of stores is
   a one-line change at the call site, not a redesign.
 - **Webhook processing runs the full sync inline**, for the same reason.
   At real volume this would enqueue a job instead of blocking the webhook
   response, and would scope the resync to the changed product rather than
   the whole catalog.
-- **The "400k products, 200+ brand partners" scale mentioned in the brief
-  this demo is built for is not simulated here** with fabricated data.
+- **Large-catalog scale (hundreds of thousands of products across hundreds
+  of brand partners) is not simulated here** with fabricated data.
   What's demonstrated instead is the part that doesn't change with scale:
   cursor pagination (page cost is constant regardless of catalog size),
   cost-aware backoff (reads the actual bucket state Shopify reports,
   whatever size it is), and idempotent upserts keyed on a stable ID
   (an upsert-by-GID is O(1) per row at any catalog size, not O(n) against
   the existing set). The two connected stores are small on purpose, to
-  keep this demo runnable end-to-end against real infrastructure instead
-  of a mock; the patterns don't change shape at 400k rows, only the run
+  keep it runnable end-to-end against real infrastructure instead of a
+  mock; the patterns don't change shape at 400k rows, only the run
   time and the argument for a background worker get stronger.
 
-## No em dashes
-
-House rule. Count in this README and the UI copy: 0.

@@ -27,7 +27,7 @@ src/
 ### Why this split
 
 - **`api/` never leaks Shopify's raw shape past itself.** The Storefront API returns metaobject fields as a flat `[{key, value}]` list — it has no way to know our field names ahead of time. `api/metaobjects.ts` is the one place that turns that into typed `BrandTheme` / `PdpModule[]` values (`metaobjectFieldsToRecord` + two typed parsers). Every component downstream works with real fields (`theme.primaryColor`, `module.moduleType`), not a `fields.find(f => f.key === '...')` scattered through the UI.
-- **Types are hand-written against the actual verified responses**, not generated blindly from the schema doc in the brief — see Verification below for what came back from each store. `src/types/shopify.ts` mirrors the wire shape; `src/types/domain.ts` is what the app actually consumes. No `any` anywhere in the data layer.
+- **Types are hand-written against the actual verified responses**, not generated blindly from the schema doc in the spec — see Verification below for what came back from each store. `src/types/shopify.ts` mirrors the wire shape; `src/types/domain.ts` is what the app actually consumes. No `any` anywhere in the data layer.
 
 ## The metaobject story (the part that's actually being graded)
 
@@ -75,7 +75,7 @@ Typography is half of what makes the two brands read as different stores (serif/
 ## Verification
 
 - `npx tsc --noEmit` — clean, no errors.
-- `npx expo export --platform ios` and `--platform android` — both bundle successfully (1387 / 1383 modules, ~3.3MB Hermes bytecode each). No emulator available in this environment, so this plus the type-check is the bar per the brief.
+- `npx expo export --platform ios` and `--platform android` — both bundle successfully (1387 / 1383 modules, ~3.3MB Hermes bytecode each). Not run against an emulator, so this plus the type-check is the bar per the spec.
 - Font assets confirmed genuinely included, not just compiled: after the fonts work above, `dist/metadata.json` from each export lists exactly 10 `.ttf` entries, and `find dist -iname "*.ttf"` / inspecting `dist/assets/*` with `file` on the extension-less hashed asset names confirms 10 real TrueType font files on disk (Cormorant×2, Archivo×2, Montserrat×3, Inter×3) — matching `FONTS_TO_LOAD` in `src/theme/fonts.ts` exactly, no more and no fewer.
 - Storefront API queries run directly against both live stores from a Node script (not through the app, to isolate "does the data exist" from "does the app work"):
   - **Nómada** (`nomada-supply-co.myshopify.com`): **59 products**. `demo_brand_theme` metaobject **present** (`primary_color #1F2A24`, `surface_color #F6F3EC`, Cormorant/Montserrat, radius 8). First product (`espiritu-libre-totebag`) had **3 PDP modules** provisioned — one of each type (`care`, `size_guide`, `bundle`), confirming the display-order/module-type dispatch against real data, not a fixture.
@@ -84,8 +84,8 @@ Typography is half of what makes the two brands read as different stores (serif/
 
 ## What's not done / known gaps
 
-- No add-to-cart or checkout flow — out of scope per the brief (this is a PDP/browse demo, not a commerce flow).
+- No add-to-cart or checkout flow — out of scope (this is a PDP/browse demo, not a commerce flow).
 - No offline/persisted store-selection (resets to Nómada on app restart) — kept it as in-memory `useState` in `StoreThemeContext` rather than pulling in a storage dependency for one boolean-ish preference.
 - No automated tests — not requested, and there's no test runner configured in this scaffold.
 - HTML description rendering (see Quality bar above) remains a named, intentional simplification.
-- Not verified on an actual device/emulator (none available in this environment) — `tsc` clean plus both platforms' `expo export` bundling successfully with the correct font assets present is the verification bar per the brief; the visual result (does Cormorant/Montserrat vs. Archivo/Inter actually look distinct on-device) is unconfirmed.
+- Not verified on an actual device/emulator (not available here) — `tsc` clean plus both platforms' `expo export` bundling successfully with the correct font assets present is the verification bar per the spec; the visual result (does Cormorant/Montserrat vs. Archivo/Inter actually look distinct on-device) is unconfirmed.

@@ -37,7 +37,7 @@ export function MerchantEmptyView({ label }: { label: string }) {
 }
 
 /**
- * Classifies `error` into the calm, specific copy the brief asks for
+ * Classifies `error` into the calm, specific copy the spec asks for
  * ("a clear, calm 'merchant API unavailable' view with the reason, never
  * a crash or a blank screen") instead of one generic "Something went
  * wrong" for every failure mode. `MerchantApiUnavailableError` /
