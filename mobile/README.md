@@ -93,6 +93,25 @@ generated manifest: `autoVerify`, host, `pathPrefix`, `launchMode` and the
 `BROWSABLE` category all present, and a second prebuild leaves exactly one filter
 rather than appending a duplicate.
 
+## Native module: applink-status
+
+`modules/applink-status/` is a local Expo module (Kotlin on Android, Swift on
+iOS) that reads whether Android verified the App Links registered by the config
+plugin above.
+
+`autoVerify` can fail quietly: a missing `assetlinks.json`, a wrong fingerprint
+or a redirect all leave the app working while every deep link opens the browser
+instead. That decision lives in the package manager, so no JavaScript can see
+it. `DomainVerificationManager` (API 31+) can, which is what makes this a native
+module rather than another plugin.
+
+iOS reports `supported: false` on purpose: Universal Link verification is not
+exposed by any public API, and claiming `verified` because nothing contradicted
+it would be worse than reporting nothing.
+
+See `modules/applink-status/README.md`. Native code requires a development
+build (`eas build --profile development`); it does not run in Expo Go.
+
 ## Verification
 
 - `npx tsc --noEmit` — clean, no errors.
