@@ -16,14 +16,25 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "co.nomada.storefront"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-image",
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "./plugins/withDeepLinks",
+        {
+          "hosts": [
+            "nomada-supply-co.myshopify.com"
+          ],
+          "pathPrefix": "/products"
+        }
+      ]
+    ],
+    "scheme": "nomadaapp"
   }
 }
