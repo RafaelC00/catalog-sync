@@ -103,9 +103,26 @@ rather than appending a duplicate.
   - **Loomwerk** (`loomwerk-apparel-wholesale.myshopify.com`): **18 products**. `demo_brand_theme` metaobject **absent** (0 nodes) and the sampled product's `pdpModules` was `null` — at the time of this build, metaobject provisioning for this store had not landed yet. This is exactly the "may not exist yet" condition the spec warned about, and it's what I used to confirm the fallback theme and empty-module-list paths for real rather than by inspection.
   - One thing worth flagging from that same check: the very first request I made returned Shopify's storefront **password-page HTML with a 200 status** instead of GraphQL JSON, which took a moment to track down — it turned out to be a `302` redirect to `/password` because my *test script's* manual `.env` parsing choked on a UTF-8 BOM at the top of the file and silently resolved the API version to `undefined`, producing a malformed URL. Not a bug in the shipped app (Expo's own env inlining doesn't have this issue), but worth a line here since it's exactly the kind of silent failure this app's own error states are designed to surface instead of hide.
 
+## Tests
+
+```bash
+npm test          # run the suite once
+npm run test:watch
+```
+
+Jest with the `jest-expo` preset and `@testing-library/react-native`. Test files live in `__tests__/` folders next to the code they cover. There are no snapshot tests; every test asserts behaviour.
+
+- `src/api/` — `parsePdpModules` (display ordering, and dropping entries with a missing or unrecognised `module_type`, an unparsable `display_order`, or no heading/body), `parseBrandTheme` (default-theme fallback for a store with no `demo_brand_theme` metaobject, partial and blank fields), and the `useBrandTheme` / `useProduct` hooks with the network layer mocked (theme falls back to `DEFAULT_THEME` on empty or failed responses; null `pdpModules` becomes an empty list).
+- `src/utils/` — description HTML parsing, spec emoji lookup, price formatting, size ordering, product option and variant availability, swatch colours, HTML stripping, and the platform branches in `haptics.ts`.
+- `src/theme/` — font registry resolution, including the fallback to the system font for unbundled fonts and weights.
+- `src/components/` — render behaviour for the state views (retry shown only when a handler is passed), `SpecGrid` (empty input, fallback emoji) and `ModuleList` (empty list renders nothing).
+
+Writing these surfaced one real bug: `specEmoji` looked labels up directly on an object literal, so a label such as `"constructor"` resolved against `Object.prototype` and returned a function, which the `??` fallback then passed through as if it were an emoji. The lookup is now guarded with `hasOwnProperty`, and the test that found it asserts the fallback.
+
+Not covered: screens, navigation, the gesture-driven image gallery, and the reanimated-based module components. `npx tsc --noEmit` includes the test files.
+
 ## What's not done / known gaps
 
 - No add-to-cart or checkout flow — out of scope (this is a PDP/browse demo, not a commerce flow).
-- No automated tests, and no test runner configured in this scaffold.
 - HTML description rendering (see Quality bar above) remains a named, intentional simplification.
 - Not verified on an actual device/emulator (not available here) — `tsc` clean plus both platforms' `expo export` bundling successfully with the correct font assets present is the verification bar per the spec; the visual result (does Cormorant/Montserrat vs. Archivo/Inter actually look distinct on-device) is unconfirmed.
