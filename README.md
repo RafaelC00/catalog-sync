@@ -69,6 +69,22 @@ line. This is a direct reaction to having shipped a health check once that
 returned 200 while the service behind it was down: this one has to fail
 loudly if the thing it's protecting is actually broken.
 
+## React Native client
+
+`mobile/` is an Expo / React Native storefront that reads this catalog as a
+shopper, through the Shopify Storefront API, with no Admin credentials on the
+device. 51 TypeScript source files across navigation, screens, context,
+theming and a typed API layer.
+
+What it covers: metaobject-driven theming (every colour, font and radius is
+fetched per store and applied at runtime, so switching brand re-themes the app
+live), two-brand switching, gesture-driven UI, list performance, platform
+divergence between iOS and Android, and hand-written types checked against
+verified API responses rather than generated blindly.
+
+See [`mobile/README.md`](mobile/README.md) for the architecture, the theming
+model, and the verification notes.
+
 ## Data model
 
 `Store` (slug, name, domain, no credential column) → `Product` → `Variant`,
