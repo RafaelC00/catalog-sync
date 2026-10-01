@@ -1,5 +1,10 @@
 .venv
 frontend/node_modules
+# The Expo app is not part of the Vercel build (see vercel.json, which builds
+# only api/index.py and frontend/). Its dependencies alone are ~544MB and a
+# payload that size fails the upload outright.
+mobile/node_modules
+mobile/.expo
 frontend/dist
 .pytest_cache
 staticfiles
