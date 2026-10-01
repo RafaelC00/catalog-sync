@@ -38,8 +38,7 @@ export default function App() {
       </main>
 
       <footer>
-        Catalog Sync is a portfolio demo: Django, Django Ninja, and React against real Shopify
-        stores. <a href="https://github.com/RafaelC00" target="_blank" rel="noreferrer">Source</a>
+        Catalog Sync: Django, Django Ninja, and React against live Shopify stores. <a href="https://github.com/RafaelC00" target="_blank" rel="noreferrer">Source</a>
       </footer>
     </div>
   );

@@ -1,9 +1,9 @@
 """
 The real /healthz check.
 
-Rafael has written publicly about a health check that returned 200
-while the service underneath it was down, so this one actually
-exercises its dependencies instead of returning a hardcoded response:
+A health check that returns 200 while the service underneath it is
+down is worse than no health check at all, so this one exercises its
+dependencies instead of returning a hardcoded response:
 
 - Database: runs a real query (not just "is the connection object
   truthy"), because a connection can exist while the query engine is
