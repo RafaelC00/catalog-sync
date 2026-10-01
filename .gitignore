@@ -27,6 +27,6 @@ mobile/dist/
 mobile/.env
 !mobile/.env.example
 
-# vendored agent tooling, not part of the project
+# vendored third-party tooling docs, not part of the project
 .agents/skills/
 skills-lock.json
