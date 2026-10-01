@@ -3,8 +3,8 @@ import { merchantApiBaseUrl, merchantApiToken } from './merchantEnv';
 
 /**
  * Thrown when the request never got a response at all -- backend not
- * running, wrong host/port, DNS failure, timeout. This is the state the
- * brief calls out explicitly ("the backend may not be running"), so it's
+ * running, wrong host/port, DNS failure, timeout. This is an expected
+ * state ("the backend may not be running"), so it's
  * its own error type rather than folded into a generic message: the UI
  * shows a calm "can't reach the merchant API" screen instead of a raw
  * fetch/network error string.

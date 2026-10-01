@@ -94,8 +94,8 @@ export interface ProductDetail {
   variants: { nodes: ProductVariant[] };
   /**
    * Nullable by design: the `custom.pdp_modules` metafield, and the
-   * metaobject definitions it references, are being provisioned by another
-   * agent in parallel. Until that lands (or if a given product simply has
+   * metaobject definitions it references, are provisioned separately.
+   * Until that lands (or if a given product simply has
    * no modules assigned), this is `null` and the PDP must still render.
    */
   pdpModules: MetaobjectReferenceConnection | null;
