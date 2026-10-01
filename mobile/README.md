@@ -1,6 +1,6 @@
 # Mobile demo — Shopify-to-native storefront
 
-A two-brand, metaobject-driven storefront app built on Expo/React Native, backed directly by the Shopify Storefront API (no intermediate backend). It exists to demonstrate two things a Forward Deployed Design Engineer would actually be judged on: **fluency with Shopify's metaobject/metafield system as a design surface**, and **real React Native engineering** (navigation, gesture-driven UI, list performance, platform divergence).
+A two-brand, metaobject-driven storefront app built on Expo/React Native, backed directly by the Shopify Storefront API (no intermediate backend). It covers two things: **fluency with Shopify's metaobject/metafield system as a design surface**, and **real React Native engineering** (navigation, gesture-driven UI, list performance, platform divergence).
 
 ## Running it
 
@@ -29,7 +29,7 @@ src/
 - **`api/` never leaks Shopify's raw shape past itself.** The Storefront API returns metaobject fields as a flat `[{key, value}]` list — it has no way to know our field names ahead of time. `api/metaobjects.ts` is the one place that turns that into typed `BrandTheme` / `PdpModule[]` values (`metaobjectFieldsToRecord` + two typed parsers). Every component downstream works with real fields (`theme.primaryColor`, `module.moduleType`), not a `fields.find(f => f.key === '...')` scattered through the UI.
 - **Types are hand-written against the actual verified responses**, not generated blindly from the schema doc in the spec — see Verification below for what came back from each store. `src/types/shopify.ts` mirrors the wire shape; `src/types/domain.ts` is what the app actually consumes. No `any` anywhere in the data layer.
 
-## The metaobject story (the part that's actually being graded)
+## The metaobject story
 
 - **Brand theme** (`demo_brand_theme`): `ThemeContext` (`src/theme/ThemeContext.tsx`) fetches this per active store via React Query and exposes a `BrandTheme` object — every colour, font family, and border radius in the app reads from it. There are exactly two deliberate exceptions, both commented at the point of use: an error message stays a fixed red regardless of brand (it's a semantic signal, not styling), and the bundle badge's label text is fixed white because it sits on a solid `primaryColor` chip where a theme-derived colour could land dark-on-dark for some brand.
 - **PDP modules** (`custom.pdp_modules` → `demo_pdp_module` metaobjects): parsed, sorted by `display_order`, and dispatched to a **genuinely different component per `module_type`** (`src/components/modules/`):
@@ -85,7 +85,6 @@ Typography is half of what makes the two brands read as different stores (serif/
 ## What's not done / known gaps
 
 - No add-to-cart or checkout flow — out of scope (this is a PDP/browse demo, not a commerce flow).
-- No offline/persisted store-selection (resets to Nómada on app restart) — kept it as in-memory `useState` in `StoreThemeContext` rather than pulling in a storage dependency for one boolean-ish preference.
-- No automated tests — not requested, and there's no test runner configured in this scaffold.
+- No automated tests, and no test runner configured in this scaffold.
 - HTML description rendering (see Quality bar above) remains a named, intentional simplification.
 - Not verified on an actual device/emulator (not available here) — `tsc` clean plus both platforms' `expo export` bundling successfully with the correct font assets present is the verification bar per the spec; the visual result (does Cormorant/Montserrat vs. Archivo/Inter actually look distinct on-device) is unconfirmed.
