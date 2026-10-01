@@ -95,3 +95,13 @@ def run_health_checks() -> dict:
         "checked_at": timezone.now(),
         "dependencies": dependencies,
     }
+
+
+def health_status_code(result: dict) -> int:
+    """
+    200 only when every dependency is ok, 503 otherwise.
+
+    Lives here rather than in the view so the /api/healthz endpoint and the
+    bare /healthz alias can never drift apart on what counts as healthy.
+    """
+    return 200 if result["status"] == "ok" else 503
