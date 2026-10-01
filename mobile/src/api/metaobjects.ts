@@ -23,8 +23,8 @@ function isPdpModuleType(value: string): value is PdpModuleType {
  * Parses the `custom.pdp_modules` metaobject references into typed,
  * display-ordered modules. Anything malformed (missing module_type, an
  * unrecognized module_type, an unparsable display_order) is dropped rather
- * than crashing the PDP -- this is provisioned by a separate agent in
- * parallel, so defensive parsing here is load-bearing, not decorative.
+ * than crashing the PDP -- this content is provisioned by a separate
+ * service, so defensive parsing here is load-bearing, not decorative.
  */
 export function parsePdpModules(nodes: MetaobjectNode[]): PdpModule[] {
   const modules: PdpModule[] = [];

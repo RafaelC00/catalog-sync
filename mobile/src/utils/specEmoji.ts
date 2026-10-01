@@ -1,6 +1,6 @@
 /**
  * Label -> emoji lookup for the spec grid, replacing the 13 inline `<svg>`
- * icons `descriptionHtml` ships (discarded per the design brief in favour
+ * icons `descriptionHtml` ships (discarded per the design spec in favour
  * of emoji). Keyed by the label text itself so it works for every label
  * this parser actually extracts, on either store, not just the spec's
  * suggested set -- an unmapped label (Loomwerk's "Customization" card,
